@@ -12,7 +12,7 @@ The **Segment Anything Model (SAM)** produces high quality object masks from inp
 
 <p float="left">
   <img src="assets/masks1.png?raw=true" width="37.25%" />
-  <img src="assets/masks2.jpg?raw=true" width="61.5%" /> 
+  <img src="assets/masks2.jpg?raw=true" width="61.5%" />
 </p>
 
 ## Installation
