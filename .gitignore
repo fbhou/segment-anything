@@ -43,3 +43,4 @@ package-lock.json
 
 notebooks/checkpoints/
 notebooks/images/
+data/
