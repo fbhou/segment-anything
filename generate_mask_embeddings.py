@@ -1,4 +1,5 @@
 import cv2
+import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -7,9 +8,11 @@ from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 
 image_path1 = r"./data/230217213828581583.png"
 image_path2 = r"./data/230217213829381562.png"
-matching_num = 5
+matching_num = 15
 
-sam = sam_model_registry["default"](checkpoint=r"./notebooks/checkpoints/sam_vit_h_4b8939.pth")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
+sam = sam_model_registry["default"](checkpoint=r"./notebooks/checkpoints/sam_vit_h_4b8939.pth").to(device)
 mask_generator = SamAutomaticMaskGenerator(sam)
 
 def generate_masks(image_path: str):
@@ -31,9 +34,6 @@ tokens2 = []
 for _, mask in enumerate(masks2):
         tokens2.append(mask["tokens"])
 
-print(len(tokens1), len(tokens2))
-print(len(tokens1[0]), len(tokens2[0]))
-
 nearest = []
 for idx1, embedding1 in enumerate(tokens1):
     min_idx = 0
@@ -50,14 +50,14 @@ nearest.sort(key=matching_sort_key)
 
 fig = plt.figure(figsize=(10, 5))
 image1 = np.array(Image.open(image_path1))
-fig1 = fig.add_subplot(121)
+fig1 = fig.add_subplot(211)
 fig1.imshow(image1)
 image2 = np.array(Image.open(image_path2))
-fig2 = fig.add_subplot(122)
+fig2 = fig.add_subplot(212)
 fig2.imshow(image2)
 
 for i in range(matching_num):
-    idx1, idx2, _ = nearest[i]
+    idx1, idx2, dis = nearest[i]
 
     bbox1 = masks1[idx1]["bbox"]
     x1 = bbox1[0] + bbox1[2] / 2
@@ -69,7 +69,15 @@ for i in range(matching_num):
     y2 = bbox2[1] + bbox2[3] / 2
     xy2 = (x2, y2)
 
-    fig2.add_artist(ConnectionPatch(xyA=xy1, xyB=xy2, axesA=fig1, axesB=fig2, coordsA="data", coordsB="data", color="red"))
+    if dis < 5.0:
+        connection_color = "red"
+    elif dis < 7.0:
+        connection_color = "orange"
+    elif dis < 9.0:
+        connection_color = "yellow"
+    else:
+        connection_color = "black"
+    fig2.add_artist(ConnectionPatch(xyA=xy1, xyB=xy2, axesA=fig1, axesB=fig2, coordsA="data", coordsB="data", color=connection_color))
 
 plt.show()
 # fig.show()
